@@ -29,9 +29,10 @@ interface Order {
   tax_cents: number
   discount_cents: number
   total_cents: number
-  payment_method: string
+  payment_method: string | null
   payment_status: string
   payment_id: string | null
+  payment_date: string | null
   status: string
   status_history: any[]
   tracking_number: string | null
