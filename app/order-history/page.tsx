@@ -35,6 +35,7 @@ interface Order {
   status: string
   status_history: any[]
   tracking_number: string | null
+  shipping_provider: string | null
   created_at: string
   updated_at: string
 }
