@@ -97,12 +97,6 @@ export default function ThriftPage() {
     router.refresh()
   }
 
-  const handleRemoveError = (message: string) => {
-    setToastMessage(message)
-    setToastType('error')
-    setShowToast(true)
-  }
-
   return (
     <div className="min-h-screen bg-base">
       {/* Header */}
@@ -177,8 +171,7 @@ export default function ThriftPage() {
                 <AddProductCard 
                   category="thrift" 
                   subcategory={selectedCategory ? `thrift-${selectedCategory}` : undefined} 
-                    onRemoveError={handleRemoveError}
-                  />
+                />
               </motion.div>
             )}
           </div>

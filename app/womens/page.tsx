@@ -99,12 +99,6 @@ export default function WomensPage() {
     router.refresh()
   }
 
-  const handleRemoveError = (message: string) => {
-    setToastMessage(message)
-    setToastType('error')
-    setShowToast(true)
-  }
-
   return (
     <div className="min-h-screen bg-base">
       {/* Header */}
@@ -179,8 +173,7 @@ export default function WomensPage() {
                 <AddProductCard 
                   category="womens" 
                   subcategory={selectedCategory ? `womens-${selectedCategory}` : undefined} 
-                    onRemoveError={handleRemoveError}
-                  />
+                />
               </motion.div>
             )}
           </div>
