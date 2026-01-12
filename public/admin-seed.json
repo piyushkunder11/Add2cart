@@ -1,0 +1,264 @@
+{
+  "categories": [
+    {
+      "id": "cat-1",
+      "name": "Best Seller",
+      "slug": "best-seller",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat-2",
+      "name": "Mens",
+      "slug": "mens",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat-2-1",
+      "name": "T-Shirts",
+      "slug": "mens-t-shirts",
+      "parentId": "cat-2",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat-2-2",
+      "name": "Shirts",
+      "slug": "mens-shirts",
+      "parentId": "cat-2",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat-2-3",
+      "name": "Jeans",
+      "slug": "mens-jeans",
+      "parentId": "cat-2",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat-3",
+      "name": "Womens",
+      "slug": "womens",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat-3-1",
+      "name": "Dresses",
+      "slug": "womens-dresses",
+      "parentId": "cat-3",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat-3-2",
+      "name": "Tops",
+      "slug": "womens-tops",
+      "parentId": "cat-3",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat-4",
+      "name": "Thrift",
+      "slug": "thrift",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat-5",
+      "name": "Footwear",
+      "slug": "footwear",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat-6",
+      "name": "Socks",
+      "slug": "socks",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-1",
+      "title": "Classic White T-Shirt",
+      "slug": "classic-white-t-shirt",
+      "description": "Premium cotton t-shirt, perfect for everyday wear. Comfortable and stylish.",
+      "priceCents": 99900,
+      "currency": "INR",
+      "inStock": true,
+      "categoryId": "cat-1",
+      "images": ["data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYWYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5XaGl0ZSBULVNoaXJ0PC90ZXh0Pjwvc3ZnPg=="],
+      "sku": "TSH-001",
+      "createdAt": "2024-01-15T10:00:00.000Z",
+      "updatedAt": "2024-01-15T10:00:00.000Z"
+    },
+    {
+      "id": "prod-2",
+      "title": "Blue Denim Jeans",
+      "slug": "blue-denim-jeans",
+      "description": "Classic blue denim jeans with a perfect fit. Durable and comfortable.",
+      "priceCents": 249900,
+      "currency": "INR",
+      "inStock": true,
+      "categoryId": "cat-2",
+      "subcategoryId": "cat-2-3",
+      "images": ["data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzM1NzNhZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5CbHVlIEplYW5zPC90ZXh0Pjwvc3ZnPg=="],
+      "sku": "JNS-001",
+      "createdAt": "2024-01-16T10:00:00.000Z",
+      "updatedAt": "2024-01-16T10:00:00.000Z"
+    },
+    {
+      "id": "prod-3",
+      "title": "Summer Dress",
+      "slug": "summer-dress",
+      "description": "Light and airy summer dress, perfect for warm weather. Flowy and elegant.",
+      "priceCents": 179900,
+      "currency": "INR",
+      "inStock": true,
+      "categoryId": "cat-3",
+      "subcategoryId": "cat-3-1",
+      "images": ["data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2ZmZTNmZiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5MzY5ZjciIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5TdW1tZXIgRHJlc3M8L3RleHQ+PC9zdmc+"],
+      "sku": "DRS-001",
+      "createdAt": "2024-01-17T10:00:00.000Z",
+      "updatedAt": "2024-01-17T10:00:00.000Z"
+    },
+    {
+      "id": "prod-4",
+      "title": "Vintage Leather Jacket",
+      "slug": "vintage-leather-jacket",
+      "description": "Authentic vintage leather jacket with a classic design. Pre-owned, excellent condition.",
+      "priceCents": 349900,
+      "currency": "INR",
+      "inStock": true,
+      "categoryId": "cat-4",
+      "images": ["data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzNhMjEyMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5MZWF0aGVyIEphY2tldDwvdGV4dD48L3N2Zz4="],
+      "sku": "THR-001",
+      "createdAt": "2024-01-18T10:00:00.000Z",
+      "updatedAt": "2024-01-18T10:00:00.000Z"
+    },
+    {
+      "id": "prod-5",
+      "title": "Running Shoes",
+      "slug": "running-shoes",
+      "description": "Comfortable running shoes with excellent cushioning. Perfect for daily workouts.",
+      "priceCents": 399900,
+      "currency": "INR",
+      "inStock": true,
+      "categoryId": "cat-5",
+      "images": ["data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYWYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5SdW5uaW5nIFNob2VzPC90ZXh0Pjwvc3ZnPg=="],
+      "sku": "SHO-001",
+      "createdAt": "2024-01-19T10:00:00.000Z",
+      "updatedAt": "2024-01-19T10:00:00.000Z"
+    },
+    {
+      "id": "prod-6",
+      "title": "Cotton Ankle Socks",
+      "slug": "cotton-ankle-socks",
+      "description": "Soft cotton ankle socks, pack of 3. Comfortable and breathable.",
+      "priceCents": 29900,
+      "currency": "INR",
+      "inStock": false,
+      "categoryId": "cat-6",
+      "images": ["data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2ZmZiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM5Y2EzYWYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Tb2NrczwvdGV4dD48L3N2Zz4="],
+      "sku": "SOC-001",
+      "createdAt": "2024-01-20T10:00:00.000Z",
+      "updatedAt": "2024-01-20T10:00:00.000Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord-1",
+      "number": "ORD-1705320000000",
+      "createdAt": "2024-01-15T12:00:00.000Z",
+      "customer": {
+        "name": "John Doe",
+        "email": "john@example.com",
+        "phone": "+91 98765 43210"
+      },
+      "items": [
+        {
+          "productId": "prod-1",
+          "title": "Classic White T-Shirt",
+          "priceCents": 99900,
+          "qty": 2
+        }
+      ],
+      "subtotalCents": 199800,
+      "shippingCents": 5000,
+      "totalCents": 204800,
+      "status": "pending",
+      "paymentMethod": "razorpay",
+      "notes": "Please deliver before 5 PM",
+      "updatedAt": "2024-01-15T12:00:00.000Z"
+    },
+    {
+      "id": "ord-2",
+      "number": "ORD-1705406400000",
+      "createdAt": "2024-01-16T12:00:00.000Z",
+      "customer": {
+        "name": "Jane Smith",
+        "email": "jane@example.com",
+        "phone": "+91 98765 43211"
+      },
+      "items": [
+        {
+          "productId": "prod-2",
+          "title": "Blue Denim Jeans",
+          "priceCents": 249900,
+          "qty": 1
+        },
+        {
+          "productId": "prod-5",
+          "title": "Running Shoes",
+          "priceCents": 399900,
+          "qty": 1
+        }
+      ],
+      "subtotalCents": 649800,
+      "shippingCents": 10000,
+      "totalCents": 659800,
+      "status": "paid",
+      "paymentMethod": "razorpay",
+      "updatedAt": "2024-01-16T13:00:00.000Z"
+    },
+    {
+      "id": "ord-3",
+      "number": "ORD-1705492800000",
+      "createdAt": "2024-01-17T12:00:00.000Z",
+      "customer": {
+        "name": "Bob Johnson",
+        "email": "bob@example.com",
+        "phone": "+91 98765 43212"
+      },
+      "items": [
+        {
+          "productId": "prod-3",
+          "title": "Summer Dress",
+          "priceCents": 179900,
+          "qty": 1
+        }
+      ],
+      "subtotalCents": 179900,
+      "shippingCents": 5000,
+      "totalCents": 184900,
+      "status": "shipped",
+      "paymentMethod": "cod",
+      "updatedAt": "2024-01-17T14:00:00.000Z"
+    }
+  ],
+  "settings": {
+    "storeName": "Add2Cart",
+    "storeLogo": null,
+    "supportEmail": "Add2cart.ind@gmail.com",
+    "supportPhone": "+91 96916 66180",
+    "currency": "INR",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+

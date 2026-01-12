@@ -26,7 +26,10 @@ yarn-error.log*
 
 # local env files
 .env*.local
+<<<<<<< HEAD
 .env
+=======
+>>>>>>> 74ba526 (Initial commit)
 
 # vercel
 .vercel
@@ -34,3 +37,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+<<<<<<< HEAD
+=======
+
+>>>>>>> 74ba526 (Initial commit)
