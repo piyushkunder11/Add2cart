@@ -18,12 +18,12 @@ export interface SupabaseProduct {
   tags: string[] | null
   created_at: string
   updated_at: string
-  categories: {
+  categories: Array<{
     slug: string
-  } | null
-  subcategories: {
+  }> | null
+  subcategories: Array<{
     slug: string
-  } | null
+  }> | null
   product_images: Array<{
     id: string
     image_url: string
@@ -222,8 +222,8 @@ export async function fetchProductsFromSupabase(
         id: product.id,
         title: product.title,
         priceCents: product.price_cents,
-        category: product.categories?.slug || '',
-        subcategory: product.subcategories?.slug || undefined,
+        category: product.categories?.[0]?.slug || '',
+        subcategory: product.subcategories?.[0]?.slug || undefined,
         inStock: product.in_stock,
         image: imageUrl,
         description: product.description || undefined,
@@ -320,8 +320,8 @@ export async function fetchProductsByCategoryPattern(pattern: string): Promise<P
         id: product.id,
         title: product.title,
         priceCents: product.price_cents,
-        category: product.categories?.slug || '',
-        subcategory: product.subcategories?.slug || undefined,
+        category: product.categories?.[0]?.slug || '',
+        subcategory: product.subcategories?.[0]?.slug || undefined,
         inStock: product.in_stock,
         image: imageUrl,
         description: product.description || undefined,
@@ -393,8 +393,8 @@ export async function fetchProductById(id: string): Promise<{ product: Product; 
         id: product.id,
         title: product.title,
         priceCents: product.price_cents,
-        category: product.categories?.slug || '',
-        subcategory: product.subcategories?.slug || undefined,
+        category: product.categories?.[0]?.slug || '',
+        subcategory: product.subcategories?.[0]?.slug || undefined,
         inStock: product.in_stock,
         image: imageUrl,
         description: product.description || undefined,
