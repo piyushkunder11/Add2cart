@@ -560,7 +560,7 @@ export async function deleteProduct(productId: string): Promise<void> {
     if (variantsResult.data) {
       variantsResult.data.forEach((variant) => {
         if (variant.image_urls) {
-          variant.image_urls.forEach((url) => allImageUrls.add(url))
+          variant.image_urls.forEach((url: string) => allImageUrls.add(url))
         }
       })
     }
