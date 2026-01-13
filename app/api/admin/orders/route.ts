@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 
+// Admin orders API uses searchParams and auth; ensure it is always treated as dynamic
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/admin/orders
  * 

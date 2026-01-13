@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 
+// This route reads searchParams and depends on runtime data, so force it to be dynamic
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/orders
  * 
