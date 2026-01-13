@@ -171,6 +171,7 @@ export async function fetchProductsFromSupabase(
         subcategory_id,
         in_stock,
         is_active,
+        tags,
         created_at,
         updated_at,
         categories!products_category_id_fkey(slug),
@@ -203,7 +204,7 @@ export async function fetchProductsFromSupabase(
     }
 
     // Transform Supabase data to Product format
-    return data.map((product: SupabaseProduct) => {
+    return (data as SupabaseProduct[]).map((product) => {
       // Get primary image or first image
       const primaryImage = product.product_images.find(img => img.is_primary) || product.product_images[0]
       const imageUrl = primaryImage?.image_url || '/products/placeholder.jpg'
