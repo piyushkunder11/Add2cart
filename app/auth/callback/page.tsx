@@ -1,7 +1,6 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
+import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -10,7 +9,7 @@ import { supabase } from '@/lib/supabase/client'
 import { useAuthStore } from '@/lib/store/auth'
 import Toast from '@/components/ui/Toast'
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const setUser = useAuthStore((state) => state.setUser)
@@ -226,3 +225,20 @@ export default function AuthCallbackPage() {
   )
 }
 
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-base flex items-center justify-center px-4">
+        <div className="bg-gray-100 rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
+          <div className="space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto"></div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Loading...</h2>
+            <p className="text-gray-600">Please wait...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <AuthCallbackContent />
+    </Suspense>
+  )
+}

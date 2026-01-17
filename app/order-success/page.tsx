@@ -1,11 +1,12 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 
-export default function OrderSuccessPage() {
+function OrderSuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const orderId = searchParams.get('id')
@@ -109,3 +110,19 @@ export default function OrderSuccessPage() {
   )
 }
 
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#E0E0E0] flex items-center justify-center px-4 py-12">
+        <div className="max-w-2xl w-full bg-white rounded-2xl border border-gray-200 p-8 md:p-12 shadow-[0_10px_25px_rgba(0,0,0,0.08)] text-center">
+          <div className="space-y-4">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-black mx-auto"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <OrderSuccessContent />
+    </Suspense>
+  )
+}
