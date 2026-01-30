@@ -80,4 +80,3 @@ export async function deleteProductImage(imageUrl: string): Promise<void> {
     throw error
   }
 }
-

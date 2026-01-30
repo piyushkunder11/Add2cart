@@ -187,12 +187,38 @@ export default function CheckoutPage() {
       setLastRazorpayOrderId(orderData.orderId)
 
       // Get Razorpay Key ID from environment (public, safe for client)
-      // Note: NEXT_PUBLIC_* vars are available at build time, but may need server restart
+      // Note: NEXT_PUBLIC_* vars are embedded at BUILD TIME in Next.js
+      // If you changed env vars in Vercel, you MUST redeploy for changes to take effect
       const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
       if (!keyId) {
         throw new Error(
-          'Razorpay Key ID is not configured. Please ensure NEXT_PUBLIC_RAZORPAY_KEY_ID is set in .env.local and restart your dev server.'
+          'Razorpay Key ID is not configured. Please ensure NEXT_PUBLIC_RAZORPAY_KEY_ID is set in environment variables and redeploy.'
         )
+      }
+
+      // Runtime validation: Check if test key is being used (warn in production)
+      if (keyId.startsWith('rzp_test_')) {
+        const isProduction = process.env.NODE_ENV === 'production' || window.location.hostname !== 'localhost'
+        if (isProduction) {
+          console.error(
+            '[Razorpay] ⚠️ SECURITY WARNING: Test key detected in production!',
+            'The app is using a TEST key (rzp_test_*) but you are in production.',
+            'This means the environment variable was not updated or the app was not redeployed after updating env vars.',
+            'Please:',
+            '1. Set NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_live_S7kDmwYpRWBgoy in Vercel',
+            '2. Redeploy the application',
+            '3. Clear browser cache and try again'
+          )
+          throw new Error(
+            'Razorpay is configured in TEST mode. Please update NEXT_PUBLIC_RAZORPAY_KEY_ID to your LIVE key in Vercel and redeploy the application.'
+          )
+        } else {
+          console.warn('[Razorpay] Running in TEST mode (rzp_test_*). This is OK for local development.')
+        }
+      } else if (keyId.startsWith('rzp_live_')) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[Razorpay] Running in LIVE mode (rzp_live_*). Make sure this is intentional for local testing.')
+        }
       }
 
       // Create draft order before opening payment modal

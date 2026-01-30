@@ -26,10 +26,10 @@ export async function POST(request: NextRequest) {
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET
 
     // Verify webhook signature
-    if (!webhookSecret) {
+    if (!webhookSecret || webhookSecret.trim() === '') {
       console.error('[Razorpay Webhook] RAZORPAY_WEBHOOK_SECRET is not configured')
       return NextResponse.json(
-        { error: 'Webhook secret not configured' },
+        { error: 'Webhook secret not configured. Please set RAZORPAY_WEBHOOK_SECRET in environment variables.' },
         { status: 500 }
       )
     }

@@ -1,5 +1,5 @@
 import Razorpay from 'razorpay'
-import { getRazorpayKeyId, getRazorpayKeySecret } from './env-validation'
+import { getRazorpayKeyId, getRazorpayKeySecret, getRazorpayMode } from './env-validation'
 
 /**
  * Masks a Razorpay key for safe logging.
@@ -39,14 +39,18 @@ export function getRazorpayClient(): Razorpay {
   if (!razorpayInstance) {
     const key_id = getRazorpayKeyId()
     const key_secret = getRazorpayKeySecret()
+    const mode = getRazorpayMode()
 
-    // Safe logging with masked keys (dev only)
+    // Safe logging with masked keys and mode (dev only)
     if (process.env.NODE_ENV !== 'production') {
       console.log(
-        '[Razorpay] Initializing server client with keys:',
+        `[Razorpay] Initializing server client in ${mode.toUpperCase()} mode:`,
         `key_id=${maskKey(key_id)}`,
         `key_secret=${maskKey(key_secret)}`
       )
+    } else {
+      // In production, only log mode (no keys)
+      console.log(`[Razorpay] Server client initialized in ${mode.toUpperCase()} mode`)
     }
 
     razorpayInstance = new Razorpay({
