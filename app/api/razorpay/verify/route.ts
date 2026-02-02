@@ -3,6 +3,8 @@ import crypto from 'crypto'
 import { getRazorpayKeySecret } from '@/lib/razorpay/env-validation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 
+export const runtime = 'nodejs'
+
 /**
  * POST /api/razorpay/verify
  * 
@@ -451,7 +453,9 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               success: false,
-              error: 'Failed to create order',
+              error: orderError instanceof Error && orderError.message
+                ? `Order creation failed: ${orderError.message}`
+                : 'Order creation failed',
               message: orderError instanceof Error ? orderError.message : 'Unknown error',
             },
             { status: 500 }

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getRazorpayClient } from '@/lib/razorpay/server'
 
+export const runtime = 'nodejs'
+
 /**
  * POST /api/razorpay/create-order
  * 

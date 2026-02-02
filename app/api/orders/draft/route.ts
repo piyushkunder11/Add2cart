@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 
+export const runtime = 'nodejs'
+
 /**
  * POST /api/orders/draft
  * Creates a draft order (before payment)

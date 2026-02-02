@@ -341,7 +341,8 @@ export default function CheckoutPage() {
 
             const verifyData = await verifyResponse.json()
 
-            if (!verifyData.success) {
+            // Treat non-2xx as failure too (and surface the best message available)
+            if (!verifyResponse.ok || !verifyData?.success) {
               // Update draft order to failed if verification fails
               if (draftOrderId) {
                 try {
@@ -363,7 +364,11 @@ export default function CheckoutPage() {
                 setDraftOrderId(null)
               }
               
-              throw new Error(verifyData.error || 'Payment verification failed')
+              const bestMessage =
+                verifyData?.error ||
+                verifyData?.message ||
+                `Payment verification failed (${verifyResponse.status})`
+              throw new Error(bestMessage)
             }
 
             // Payment verified and order created successfully
