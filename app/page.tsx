@@ -30,7 +30,6 @@ export default function HomePage() {
   const [mensProducts, setMensProducts] = useState<Product[]>([])
   const [womensProducts, setWomensProducts] = useState<Product[]>([])
   const [thriftProducts, setThriftProducts] = useState<Product[]>([])
-  const [footwearProducts, setFootwearProducts] = useState<Product[]>([])
   const [accessoriesProducts, setAccessoriesProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -40,12 +39,11 @@ export default function HomePage() {
       setIsLoading(true)
       setError(null)
       // Fetch all categories in parallel
-      const [bestSeller, mens, womens, thrift, footwear, accessories] = await Promise.all([
+      const [bestSeller, mens, womens, thrift, accessories] = await Promise.all([
         fetchProductsFromSupabase('best-seller'),
         fetchProductsByCategoryPattern('mens'),
         fetchProductsByCategoryPattern('womens'),
         fetchProductsByCategoryPattern('thrift'),
-        fetchProductsFromSupabase('footwear'),
         fetchProductsFromSupabase('accessories'),
       ])
       
@@ -53,7 +51,6 @@ export default function HomePage() {
       setMensProducts(mens)
       setWomensProducts(womens)
       setThriftProducts(thrift)
-      setFootwearProducts(footwear)
       setAccessoriesProducts(accessories)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load products from Supabase'
@@ -446,39 +443,6 @@ export default function HomePage() {
               </motion.div>
             </Link>
           </motion.div>
-        </section>
-
-        {/* Footwear Section */}
-        <section id="footwear" className="container mx-auto px-4 py-16 md:py-24">
-          <SectionHeader title="Footwear" href="#footwear" />
-          {isLoading ? (
-            <div className="text-center py-16">
-              <p className="text-gray-600">Loading products...</p>
-            </div>
-          ) : footwearProducts.length === 0 ? (
-            <div>
-              <div className="text-center py-16">
-                <p className="text-gray-600 text-lg mb-2">No products yet</p>
-                <p className="text-gray-500 text-sm">
-                  {!isAdminLoading && isAdmin
-                    ? 'Add your first product using the "Add Product" card below.'
-                    : 'Check back soon for new products!'}
-                </p>
-              </div>
-              {!isAdminLoading && isAdmin && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="max-w-md mx-auto"
-                >
-                  <AddProductCard category="footwear" />
-                </motion.div>
-              )}
-            </div>
-          ) : (
-            <Carousel products={footwearProducts} category="footwear" />
-          )}
         </section>
 
         {/* Accessories Section */}

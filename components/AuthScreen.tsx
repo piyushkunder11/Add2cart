@@ -545,8 +545,16 @@ export default function AuthScreen({ defaultTab = 'login' }: AuthScreenProps) {
                     })
 
                     if (oauthError) {
-                      setError(oauthError.message)
-                      setToastMessage(oauthError.message || 'Google sign-in failed')
+                      // Check for specific OAuth configuration errors
+                      let errorMsg = oauthError.message || 'Google sign-in failed'
+                      
+                      if (oauthError.message?.includes('missing OAuth secret') || 
+                          oauthError.message?.includes('Unsupported provider')) {
+                        errorMsg = 'Google sign-in is not configured. Please contact the administrator or configure Google OAuth in Supabase dashboard.'
+                      }
+                      
+                      setError(errorMsg)
+                      setToastMessage(errorMsg)
                       setToastType('error')
                       setShowToast(true)
                       setIsSubmitting(false)
@@ -556,7 +564,15 @@ export default function AuthScreen({ defaultTab = 'login' }: AuthScreenProps) {
                     // OAuth redirect will happen automatically
                     // The user will be redirected back to /auth/callback after authentication
                   } catch (err) {
-                    const errorMessage = err instanceof Error ? err.message : 'Google sign-in failed'
+                    let errorMessage = err instanceof Error ? err.message : 'Google sign-in failed'
+                    
+                    // Check for OAuth configuration errors
+                    if (errorMessage.includes('missing OAuth secret') || 
+                        errorMessage.includes('Unsupported provider') ||
+                        errorMessage.includes('validation_failed')) {
+                      errorMessage = 'Google sign-in is not configured. Please contact the administrator or configure Google OAuth in Supabase dashboard.'
+                    }
+                    
                     setError(errorMessage)
                     setToastMessage(errorMessage)
                     setToastType('error')

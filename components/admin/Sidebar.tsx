@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: '📊' },
-  { href: '/admin/orders', label: 'Orders', icon: '📦' },
   { href: '/admin/products', label: 'Products', icon: '👕' },
   { href: '/admin/settings', label: 'Settings', icon: '⚙️' },
 ]
