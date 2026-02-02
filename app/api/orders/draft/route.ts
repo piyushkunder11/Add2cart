@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       order_id: orderData.id,
-      order_number: orderNumber,
+      order_number: orderData.order_number,
     })
   } catch (error: any) {
     console.error('[Draft Order] Error:', error)
