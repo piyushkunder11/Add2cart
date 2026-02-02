@@ -249,13 +249,22 @@ export default function Navbar() {
                         </Link>
                       )}
                       {!isAdminLoading && isAdmin && (
-                        <Link
-                          href="/settings"
-                          className="block px-4 py-2 text-gray-900 hover:bg-gray-50 hover:text-neutral-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
-                          role="menuitem"
-                        >
-                          Settings
-                        </Link>
+                        <>
+                          <Link
+                            href="/admin/orders"
+                            className="block px-4 py-2 text-gray-900 hover:bg-gray-50 hover:text-neutral-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
+                            role="menuitem"
+                          >
+                            Orders
+                          </Link>
+                          <Link
+                            href="/settings"
+                            className="block px-4 py-2 text-gray-900 hover:bg-gray-50 hover:text-neutral-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
+                            role="menuitem"
+                          >
+                            Settings
+                          </Link>
+                        </>
                       )}
                       {!isAdminLoading && isAdmin && (
                         <>
@@ -370,13 +379,22 @@ export default function Navbar() {
                       Profile
                     </Link>
                     {!isAdminLoading && isAdmin && (
-                      <Link
-                        href="/settings"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="block w-full px-4 py-2 text-center text-gray-900 hover:text-neutral-700 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
-                      >
-                        Settings
-                      </Link>
+                      <>
+                        <Link
+                          href="/admin/orders"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block w-full px-4 py-2 text-center text-gray-900 hover:text-neutral-700 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                        >
+                          Orders
+                        </Link>
+                        <Link
+                          href="/settings"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block w-full px-4 py-2 text-center text-gray-900 hover:text-neutral-700 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                        >
+                          Settings
+                        </Link>
+                      </>
                     )}
                     {!isAdminLoading && isAdmin && (
                       <div className="border-t border-gray-200 my-2" />

@@ -1,4 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
+﻿import { createClient } from '@supabase/supabase-js'
+import { NextRequest } from 'next/server'
 
 /**
  * Server-side Supabase client
@@ -25,3 +26,44 @@ export function createServerSupabaseClient() {
   })
 }
 
+/**
+ * Server-side Supabase client with authentication support
+ * Creates a client with anon key and extracts access token from request headers
+ * Use this when you need to authenticate users in API routes
+ */
+export function createServerSupabaseClientWithAuth(request: NextRequest) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl) {
+    throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_URL')
+  }
+
+  if (!supabaseAnonKey) {
+    throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  }
+
+  // Extract access token from Authorization header
+  const authHeader = request.headers.get('Authorization')
+  const accessToken = authHeader?.startsWith('Bearer ') 
+    ? authHeader.substring(7) 
+    : null
+
+  // Create client with anon key (for user authentication, respects RLS)
+  const client = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+    global: {
+      headers: accessToken ? {
+        Authorization: `Bearer ${accessToken}`,
+      } : {},
+    },
+  })
+
+  return {
+    client,
+    accessToken,
+  }
+}

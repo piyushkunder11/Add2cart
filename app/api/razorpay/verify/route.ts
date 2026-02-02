@@ -284,69 +284,118 @@ export async function POST(request: NextRequest) {
 
           // If no draft order or update failed, create new order
           if (!orderData || orderError) {
-            // Generate order number using the database function
+            // Generate order number with retry logic to handle duplicates
             let orderNumber: string
-            try {
-              const { data: generatedOrderNumber, error: orderNumberError } = await supabase.rpc(
-                'generate_order_number'
-              )
+            let newOrderData: { id: string; order_number: string } | null = null
+            let newOrderError: any = null
+            const maxRetries = 5
+            let retryCount = 0
 
-              if (orderNumberError || !generatedOrderNumber) {
-                // Fallback: generate order number manually
+            while (!newOrderData && retryCount < maxRetries) {
+              try {
+                // Generate order number using the database function
+                const { data: generatedOrderNumber, error: orderNumberError } = await supabase.rpc(
+                  'generate_order_number'
+                )
+
+                if (orderNumberError || !generatedOrderNumber) {
+                  // Fallback: generate order number manually with timestamp to ensure uniqueness
+                  const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '')
+                  const timestamp = Date.now()
+                  const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+                  orderNumber = `ORD-${dateStr}-${String(timestamp).slice(-5)}-${randomSuffix}`
+                } else {
+                  orderNumber = generatedOrderNumber
+                }
+
+                // Check if order number already exists
+                const { data: existingOrder } = await supabase
+                  .from('orders')
+                  .select('id')
+                  .eq('order_number', orderNumber)
+                  .maybeSingle()
+
+                if (existingOrder) {
+                  // Order number exists, generate a new one with random suffix
+                  if (process.env.NODE_ENV !== 'production') {
+                    console.warn('[Razorpay Verify] Order number collision detected, generating new one:', orderNumber)
+                  }
+                  const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '')
+                  const timestamp = Date.now()
+                  const randomSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+                  orderNumber = `ORD-${dateStr}-${String(timestamp).slice(-6)}-${randomSuffix}`
+                  retryCount++
+                  continue
+                }
+
+                // Insert order with generated order number
+                const { data: insertedOrderData, error: insertedOrderError } = await supabase
+                  .from('orders')
+                  .insert({
+                    order_number: orderNumber,
+                    user_id: user_id || null,
+                    email,
+                    phone: phone || null,
+                    address_json,
+                    items_json,
+                    subtotal_cents: subtotal_cents || total_cents,
+                    shipping_cents,
+                    tax_cents,
+                    discount_cents,
+                    total_cents,
+                    payment_method: 'razorpay',
+                    payment_status: 'paid',
+                    payment_id: razorpay_payment_id,
+                    payment_date: new Date().toISOString(),
+                    status: 'confirmed',
+                    status_history: [
+                      {
+                        status: 'confirmed',
+                        timestamp: new Date().toISOString(),
+                        note: 'Payment received via Razorpay',
+                      },
+                    ],
+                  })
+                  .select('id, order_number')
+                  .single()
+
+                // Check if error is due to duplicate order number
+                if (insertedOrderError?.code === '23505' || insertedOrderError?.message?.includes('duplicate') || insertedOrderError?.message?.includes('unique')) {
+                  if (process.env.NODE_ENV !== 'production') {
+                    console.warn('[Razorpay Verify] Duplicate order number detected, retrying:', {
+                      orderNumber,
+                      error: insertedOrderError.message,
+                      retryCount: retryCount + 1,
+                    })
+                  }
+                  retryCount++
+                  // Wait a bit before retrying to avoid race conditions
+                  await new Promise(resolve => setTimeout(resolve, 100 * retryCount))
+                  continue
+                }
+
+                newOrderData = insertedOrderData
+                newOrderError = insertedOrderError
+                break
+              } catch (error) {
+                // Fallback: generate order number manually with high randomness
                 if (process.env.NODE_ENV !== 'production') {
-                  console.warn('[Razorpay Verify] RPC function failed, generating order number manually:', orderNumberError)
+                  console.warn('[Razorpay Verify] Error generating order number, using fallback:', error)
                 }
                 const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '')
-                const { count } = await supabase
-                  .from('orders')
-                  .select('*', { count: 'exact', head: true })
-                  .gte('created_at', new Date().toISOString().split('T')[0])
-
-                const orderCount = (count || 0) + 1
-                orderNumber = `ORD-${dateStr}-${String(orderCount).padStart(5, '0')}`
-              } else {
-                orderNumber = generatedOrderNumber
+                const timestamp = Date.now()
+                const randomSuffix = Math.floor(Math.random() * 100000).toString().padStart(5, '0')
+                orderNumber = `ORD-${dateStr}-${String(timestamp).slice(-6)}-${randomSuffix}`
+                retryCount++
+                
+                if (retryCount >= maxRetries) {
+                  newOrderError = error
+                  break
+                }
+                // Wait before retrying
+                await new Promise(resolve => setTimeout(resolve, 100 * retryCount))
               }
-            } catch (error) {
-              // Fallback: generate order number manually
-              if (process.env.NODE_ENV !== 'production') {
-                console.warn('[Razorpay Verify] Error generating order number, using fallback:', error)
-              }
-              const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '')
-              const timestamp = Date.now()
-              orderNumber = `ORD-${dateStr}-${String(timestamp).slice(-5)}`
             }
-
-            // Insert order with generated order number
-            const { data: newOrderData, error: newOrderError } = await supabase
-              .from('orders')
-              .insert({
-                order_number: orderNumber,
-                user_id: user_id || null,
-                email,
-                phone: phone || null,
-                address_json,
-                items_json,
-                subtotal_cents: subtotal_cents || total_cents,
-                shipping_cents,
-                tax_cents,
-                discount_cents,
-                total_cents,
-                payment_method: 'razorpay',
-                payment_status: 'paid',
-                payment_id: razorpay_payment_id,
-                payment_date: new Date().toISOString(),
-                status: 'confirmed',
-                status_history: [
-                  {
-                    status: 'confirmed',
-                    timestamp: new Date().toISOString(),
-                    note: 'Payment received via Razorpay',
-                  },
-                ],
-              })
-              .select('id, order_number')
-              .single()
 
             orderData = newOrderData
             orderError = newOrderError
@@ -365,8 +414,8 @@ export async function POST(request: NextRequest) {
             let errorMessage = 'Failed to create order'
             if (orderError?.code === 'PGRST116') {
               errorMessage = 'Order creation failed: Database connection error. Please check Supabase configuration.'
-            } else if (orderError?.code === '23505') {
-              errorMessage = 'Order creation failed: Order number already exists. Please try again.'
+            } else if (orderError?.code === '23505' || orderError?.message?.includes('duplicate') || orderError?.message?.includes('unique')) {
+              errorMessage = 'Order creation failed: Unable to generate unique order number. Please try again.'
             } else if (orderError?.message?.includes('permission denied') || orderError?.message?.includes('RLS')) {
               errorMessage = 'Order creation failed: Permission denied. Please check Supabase RLS policies.'
             } else if (orderError?.message) {

@@ -124,6 +124,13 @@ export default function OrderHistoryPage() {
     }
 
     fetchOrders()
+
+    // Auto-refresh orders every 15 seconds to see latest status updates
+    const refreshInterval = setInterval(() => {
+      fetchOrders()
+    }, 15000) // 15 seconds
+
+    return () => clearInterval(refreshInterval)
   }, [isAuthenticated, user, authLoading, router, fetchOrders])
 
   if (authLoading || loading) {
@@ -144,15 +151,37 @@ export default function OrderHistoryPage() {
   return (
     <div className="min-h-screen bg-[#E0E0E0]">
         <div className="container mx-auto px-4 pt-4 pb-8 md:pt-6 md:pb-12">
-          <div className="mb-8">
-            <Link
-              href="/"
-              className="text-gray-600 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded inline-block mb-4"
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <Link
+                href="/"
+                className="text-gray-600 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded inline-block mb-4"
+              >
+                ← Back to Home
+              </Link>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Order History</h1>
+              <p className="text-gray-600 mt-2">View all your past orders</p>
+            </div>
+            <button
+              onClick={fetchOrders}
+              disabled={loading}
+              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 self-start sm:self-auto"
             >
-              ← Back to Home
-            </Link>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Order History</h1>
-            <p className="text-gray-600 mt-2">View all your past orders</p>
+              <svg
+                className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </button>
           </div>
 
           {error && (
@@ -352,6 +381,68 @@ export default function OrderHistoryPage() {
                           <span className="font-semibold">Shipping Provider:</span> {order.shipping_provider}
                         </p>
                       )}
+                    </div>
+                  )}
+
+                  {/* Order Status History Timeline */}
+                  {order.status_history && Array.isArray(order.status_history) && order.status_history.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <h3 className="font-semibold text-gray-900 mb-4">Order Status Updates</h3>
+                      <div className="relative">
+                        {/* Timeline line */}
+                        <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                        
+                        <div className="space-y-4">
+                          {order.status_history
+                            .slice()
+                            .reverse()
+                            .map((historyItem: any, historyIndex: number) => {
+                              const isLatest = historyIndex === 0
+                              const statusColor = statusColors[historyItem.status] || 'bg-gray-100 text-gray-800'
+                              
+                              return (
+                                <div key={historyIndex} className="relative flex items-start gap-4">
+                                  {/* Timeline dot */}
+                                  <div className={`relative z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                                    isLatest ? 'bg-gray-900 ring-4 ring-gray-900/20' : 'bg-gray-300'
+                                  }`}>
+                                    <div className={`w-3 h-3 rounded-full ${
+                                      isLatest ? 'bg-white' : 'bg-gray-600'
+                                    }`}></div>
+                                  </div>
+                                  
+                                  {/* Content */}
+                                  <div className="flex-1 pb-4">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusColor}`}>
+                                        {historyItem.status.charAt(0).toUpperCase() + historyItem.status.slice(1)}
+                                      </span>
+                                      {isLatest && (
+                                        <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                                          Current
+                                        </span>
+                                      )}
+                                    </div>
+                                    {historyItem.note && (
+                                      <p className="text-sm text-gray-600 mb-1">{historyItem.note}</p>
+                                    )}
+                                    {historyItem.timestamp && (
+                                      <p className="text-xs text-gray-500">
+                                        {new Date(historyItem.timestamp).toLocaleDateString('en-IN', {
+                                          year: 'numeric',
+                                          month: 'long',
+                                          day: 'numeric',
+                                          hour: '2-digit',
+                                          minute: '2-digit',
+                                        })}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                        </div>
+                      </div>
                     </div>
                   )}
 
