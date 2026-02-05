@@ -1,4 +1,4 @@
-﻿import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 import { NextRequest } from 'next/server'
 
 /**
@@ -7,18 +7,28 @@ import { NextRequest } from 'next/server'
  */
 export function createServerSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl) {
     throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_URL')
   }
 
-  if (!supabaseServiceKey) {
+  // Prefer service role key (bypasses RLS), fallback to anon key
+  const keyToUse = supabaseServiceKey || supabaseAnonKey
+
+  if (!keyToUse) {
     throw new Error('Missing env.SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY')
   }
 
+  // Warn in development if service role key is not set (for better debugging)
+  if (process.env.NODE_ENV !== 'production' && !supabaseServiceKey) {
+    console.warn('[Supabase] ⚠️  Using anon key instead of service role key. Some operations may fail due to RLS policies.')
+    console.warn('[Supabase] Set SUPABASE_SERVICE_ROLE_KEY in .env.local to bypass RLS for server-side operations.')
+  }
+
   // Use service role key if available (for admin operations), otherwise use anon key
-  return createClient(supabaseUrl, supabaseServiceKey, {
+  return createClient(supabaseUrl, keyToUse, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

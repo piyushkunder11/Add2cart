@@ -364,10 +364,18 @@ export default function CheckoutPage() {
                 setDraftOrderId(null)
               }
               
-              const bestMessage =
-                verifyData?.error ||
-                verifyData?.message ||
-                `Payment verification failed (${verifyResponse.status})`
+              // Provide user-friendly error messages
+              let bestMessage = verifyData?.error || verifyData?.message || `Payment verification failed (${verifyResponse.status})`
+              
+              // Make error messages more user-friendly
+              if (bestMessage.includes('Permission denied') || bestMessage.includes('RLS') || bestMessage.includes('row-level security')) {
+                bestMessage = 'Order creation failed due to server configuration. Please contact support or try again later.'
+              } else if (bestMessage.includes('Database connection') || bestMessage.includes('Supabase')) {
+                bestMessage = 'Unable to process your order. Please try again in a few moments.'
+              } else if (bestMessage.includes('Invalid Supabase credentials')) {
+                bestMessage = 'Server configuration error. Please contact support.'
+              }
+              
               throw new Error(bestMessage)
             }
 

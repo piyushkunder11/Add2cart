@@ -251,13 +251,21 @@ export async function POST(request: NextRequest) {
 
           if (draft_order_id) {
             // Update existing draft order
-            const { data: currentOrder } = await supabase
+            const { data: currentOrder, error: fetchError } = await supabase
               .from('orders')
               .select('status_history, order_number')
               .eq('id', draft_order_id)
               .single()
 
-            if (currentOrder) {
+            if (fetchError) {
+              if (process.env.NODE_ENV !== 'production') {
+                console.warn('[Razorpay Verify] Draft order not found, will create new order:', {
+                  draft_order_id,
+                  error: fetchError.message,
+                })
+              }
+              // Draft order not found, will create new one below
+            } else if (currentOrder) {
               const statusHistory = currentOrder?.status_history || []
               statusHistory.push({
                 status: 'confirmed',
@@ -279,8 +287,19 @@ export async function POST(request: NextRequest) {
                 .select('id, order_number')
                 .single()
 
-              orderData = updatedOrder
-              orderError = updateError
+              if (updateError) {
+                if (process.env.NODE_ENV !== 'production') {
+                  console.warn('[Razorpay Verify] Failed to update draft order, will create new order:', {
+                    draft_order_id,
+                    error: updateError.message,
+                    code: updateError.code,
+                  })
+                }
+                // Update failed, will create new one below
+                orderError = null // Reset error to allow creating new order
+              } else {
+                orderData = updatedOrder
+              }
             }
           }
 
@@ -410,6 +429,7 @@ export async function POST(request: NextRequest) {
               message: orderError?.message,
               details: orderError?.details,
               hint: orderError?.hint,
+              has_service_role_key: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
             })
             
             // Provide more specific error messages
@@ -418,8 +438,10 @@ export async function POST(request: NextRequest) {
               errorMessage = 'Order creation failed: Database connection error. Please check Supabase configuration.'
             } else if (orderError?.code === '23505' || orderError?.message?.includes('duplicate') || orderError?.message?.includes('unique')) {
               errorMessage = 'Order creation failed: Unable to generate unique order number. Please try again.'
-            } else if (orderError?.message?.includes('permission denied') || orderError?.message?.includes('RLS')) {
-              errorMessage = 'Order creation failed: Permission denied. Please check Supabase RLS policies.'
+            } else if (orderError?.message?.includes('permission denied') || orderError?.message?.includes('RLS') || orderError?.message?.includes('row-level security')) {
+              errorMessage = 'Order creation failed: Permission denied. Please ensure SUPABASE_SERVICE_ROLE_KEY is set in your environment variables to bypass RLS policies.'
+            } else if (orderError?.message?.includes('JWT') || orderError?.message?.includes('invalid')) {
+              errorMessage = 'Order creation failed: Invalid Supabase credentials. Please check your environment variables.'
             } else if (orderError?.message) {
               errorMessage = `Order creation failed: ${orderError.message}`
             }
@@ -429,7 +451,11 @@ export async function POST(request: NextRequest) {
                 success: false,
                 error: errorMessage,
                 message: orderError?.message || 'Unknown error',
-                details: process.env.NODE_ENV === 'development' ? orderError?.details : undefined,
+                details: process.env.NODE_ENV === 'development' ? {
+                  ...orderError?.details,
+                  has_service_role_key: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+                  error_code: orderError?.code,
+                } : undefined,
               },
               { status: 500 }
             )
