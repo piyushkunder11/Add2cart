@@ -144,7 +144,8 @@ export async function POST(request: NextRequest) {
       .eq('id', categoryId)
       .single()
 
-    if (!verify?.image_url) {
+    const typedVerify = verify as { image_url: string | null } | null
+    if (!typedVerify?.image_url) {
       console.error('[Category Upload] Update reported success but image_url not set on row')
       return NextResponse.json(
         { error: 'Image was uploaded but the category record did not update. Ensure SUPABASE_SERVICE_ROLE_KEY is set.' },
