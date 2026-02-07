@@ -10,12 +10,12 @@ import { useIsAdmin } from '@/lib/auth/useIsAdmin'
 import { formatINR } from '@/lib/utils/money'
 import ProductKebabMenu from '@/components/admin/ProductKebabMenu'
 import AddProductCard from '@/components/shop/AddProductCard'
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, Suspense } from 'react'
 import Toast from '@/components/ui/Toast'
 import { fetchProductsFromSupabase, type Product, subscribeToProductsRealtime } from '@/lib/supabase/products'
 import { fetchSubcategoriesByParentSlug, type Category } from '@/lib/supabase/categories'
 
-export default function BestSellerPage() {
+function BestSellerContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [categories, setCategories] = useState<Category[]>([])
@@ -285,5 +285,17 @@ export default function BestSellerPage() {
         onClose={() => setShowToast(false)}
       />
     </div>
+  )
+}
+
+export default function BestSellerPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-base flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    }>
+      <BestSellerContent />
+    </Suspense>
   )
 }
