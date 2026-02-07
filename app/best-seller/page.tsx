@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useIsAdmin } from '@/lib/auth/useIsAdmin'
 import { formatINR } from '@/lib/utils/money'
 import ProductKebabMenu from '@/components/admin/ProductKebabMenu'
@@ -13,18 +13,12 @@ import AddProductCard from '@/components/shop/AddProductCard'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import Toast from '@/components/ui/Toast'
 import { fetchProductsFromSupabase, type Product, subscribeToProductsRealtime } from '@/lib/supabase/products'
-
-const categories = [
-  { name: 'RACING JACKET', slug: 'racing-jacket' },
-  { name: 'LEATHER JACKET', slug: 'leather-jacket' },
-  { name: 'BOOTCUT PANT', slug: 'bootcut-pant' },
-  { name: 'KOREAN SHIRT', slug: 'korean-shirt' },
-  { name: 'LINEN PANTS', slug: 'linen-pants' },
-]
+import { fetchSubcategoriesByParentSlug, type Category } from '@/lib/supabase/categories'
 
 export default function BestSellerPage() {
   const router = useRouter()
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const [categories, setCategories] = useState<Category[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showToast, setShowToast] = useState(false)
@@ -32,15 +26,16 @@ export default function BestSellerPage() {
   const [toastType, setToastType] = useState<'success' | 'error'>('success')
   const { isAdmin, isLoading: isAdminLoading } = useIsAdmin()
 
-  // Get category from URL query params
+  // Selected category from URL so it persists on refresh and when navigating back
+  const selectedCategory = searchParams.get('category')
+
+  // Fetch best-seller subcategories (same slugs as home page links)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search)
-      const category = params.get('category')
-      if (category) {
-        setSelectedCategory(category)
-      }
-    }
+    let cancelled = false
+    fetchSubcategoriesByParentSlug('best-seller').then((data) => {
+      if (!cancelled) setCategories(data)
+    })
+    return () => { cancelled = true }
   }, [])
 
   // Fetch products from Supabase
@@ -68,19 +63,18 @@ export default function BestSellerPage() {
     return unsubscribe
   }, [loadProducts])
 
-  // Filter products by selected category
+  // Filter products by selected category (subcategory slug from API e.g. best-leather-jacket)
   const filteredProducts = useMemo(() => {
     if (!selectedCategory) {
       return products
     }
-    return products.filter((p) => {
-      // Check if subcategory matches
-      if (p.subcategory === selectedCategory || p.subcategory?.endsWith(`-${selectedCategory}`)) {
-        return true
-      }
-      return false
-    })
+    return products.filter((p) => p.subcategory === selectedCategory)
   }, [selectedCategory, products])
+
+  const setCategoryInUrl = useCallback((slug: string | null) => {
+    const url = slug ? `/best-seller?category=${encodeURIComponent(slug)}` : '/best-seller'
+    router.replace(url, { scroll: false })
+  }, [router])
 
   const getProductStockStatus = (productId: string) => {
     const product = products.find(p => p.id === productId)
@@ -125,10 +119,10 @@ export default function BestSellerPage() {
             <div className="w-24" /> {/* Spacer for centering */}
           </div>
 
-          {/* Category Filters - Centered */}
+          {/* Category Filters - Centered (URL-synced so selection persists on refresh) */}
           <div className="flex flex-wrap gap-2 justify-center">
             <button
-              onClick={() => setSelectedCategory(null)}
+              onClick={() => setCategoryInUrl(null)}
               className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
                 selectedCategory === null
                   ? 'bg-primary text-white'
@@ -140,14 +134,14 @@ export default function BestSellerPage() {
             {categories.map((cat) => (
               <button
                 key={cat.slug}
-                onClick={() => setSelectedCategory(cat.slug)}
+                onClick={() => setCategoryInUrl(cat.slug)}
                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
                   selectedCategory === cat.slug
                     ? 'bg-primary text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 } focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2`}
               >
-                {cat.name}
+                {cat.name.toUpperCase()}
               </button>
             ))}
           </div>
@@ -179,7 +173,7 @@ export default function BestSellerPage() {
               >
                 <AddProductCard 
                   category="best-seller" 
-                  subcategory={selectedCategory ? `best-seller-${selectedCategory}` : undefined} 
+                  subcategory={selectedCategory ?? undefined} 
                 />
               </motion.div>
             )}
@@ -277,7 +271,7 @@ export default function BestSellerPage() {
               >
                 <AddProductCard 
                   category="best-seller" 
-                  subcategory={selectedCategory ? `best-seller-${selectedCategory}` : undefined} 
+                  subcategory={selectedCategory ?? undefined} 
                 />
               </motion.div>
             )}

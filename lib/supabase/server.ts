@@ -2,6 +2,27 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest } from 'next/server'
 
 /**
+ * Server-side Supabase client with service role key only.
+ * Use for operations that must persist regardless of RLS (e.g. category image update).
+ * Returns null if SUPABASE_SERVICE_ROLE_KEY is not set.
+ */
+export function createServiceRoleClient(): ReturnType<typeof createClient> | null {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return null
+  }
+
+  return createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
+}
+
+/**
  * Server-side Supabase client
  * Use this in API routes and server components
  */

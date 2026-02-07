@@ -4,7 +4,6 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 import Link from 'next/link'
 import Navbar from '@/components/home/Navbar'
 import Hero from '@/components/home/Hero'
@@ -21,6 +20,8 @@ import { useIsAdmin } from '@/lib/auth/useIsAdmin'
 import ProductCard from '@/components/shop/ProductCard'
 import AddProductCard from '@/components/shop/AddProductCard'
 import { fetchProductsFromSupabase, fetchProductsByCategoryPattern, type Product, subscribeToProductsRealtime } from '@/lib/supabase/products'
+import { fetchSubcategoriesByParentSlug, type Category } from '@/lib/supabase/categories'
+import CategoryCard from '@/components/home/CategoryCard'
 
 export default function HomePage() {
   const { isAdmin, isLoading: isAdminLoading } = useIsAdmin()
@@ -33,18 +34,63 @@ export default function HomePage() {
   const [accessoriesProducts, setAccessoriesProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // Category state
+  const [bestSellerCategories, setBestSellerCategories] = useState<Category[]>([])
+  const [mensCategories, setMensCategories] = useState<Category[]>([])
+  const [womensCategories, setWomensCategories] = useState<Category[]>([])
+  const [thriftCategories, setThriftCategories] = useState<Category[]>([])
+  const [accessoriesCategories, setAccessoriesCategories] = useState<Category[]>([])
+
+  const loadCategories = useCallback(async () => {
+    try {
+      // Fetch all categories in parallel
+      const [bestSellerCats, mensCats, womensCats, thriftCats, accessoriesCats] = await Promise.all([
+        fetchSubcategoriesByParentSlug('best-seller'),
+        fetchSubcategoriesByParentSlug('mens'),
+        fetchSubcategoriesByParentSlug('womens'),
+        fetchSubcategoriesByParentSlug('thrift'),
+        fetchSubcategoriesByParentSlug('accessories'),
+      ])
+      
+      // Set categories (limit to 3 for display)
+      setBestSellerCategories(bestSellerCats.slice(0, 3))
+      setMensCategories(mensCats.slice(0, 3))
+      setWomensCategories(womensCats.slice(0, 3))
+      setThriftCategories(thriftCats.slice(0, 3))
+      setAccessoriesCategories(accessoriesCats.slice(0, 3))
+    } catch (error) {
+      console.error('[HomePage] Error loading categories:', error)
+    }
+  }, [])
+
+  // Update category image in state immediately after upload so the card shows the new image
+  const handleCategoryImageChange = useCallback((categoryId: string, newImageUrl: string) => {
+    const updateImage = (prev: Category[]) =>
+      prev.map((c) => (c.id === categoryId ? { ...c, image_url: newImageUrl } : c))
+    setBestSellerCategories(updateImage)
+    setMensCategories(updateImage)
+    setWomensCategories(updateImage)
+    setThriftCategories(updateImage)
+    setAccessoriesCategories(updateImage)
+  }, [])
 
   const loadProducts = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
-      // Fetch all categories in parallel
-      const [bestSeller, mens, womens, thrift, accessories] = await Promise.all([
+      // Fetch all products and categories in parallel
+      const [bestSeller, mens, womens, thrift, accessories, bestSellerCats, mensCats, womensCats, thriftCats, accessoriesCats] = await Promise.all([
         fetchProductsFromSupabase('best-seller'),
         fetchProductsByCategoryPattern('mens'),
         fetchProductsByCategoryPattern('womens'),
         fetchProductsByCategoryPattern('thrift'),
         fetchProductsFromSupabase('accessories'),
+        fetchSubcategoriesByParentSlug('best-seller'),
+        fetchSubcategoriesByParentSlug('mens'),
+        fetchSubcategoriesByParentSlug('womens'),
+        fetchSubcategoriesByParentSlug('thrift'),
+        fetchSubcategoriesByParentSlug('accessories'),
       ])
       
       setBestSellers(bestSeller)
@@ -52,6 +98,13 @@ export default function HomePage() {
       setWomensProducts(womens)
       setThriftProducts(thrift)
       setAccessoriesProducts(accessories)
+      
+      // Set categories (limit to 3 for display)
+      setBestSellerCategories(bestSellerCats.slice(0, 3))
+      setMensCategories(mensCats.slice(0, 3))
+      setWomensCategories(womensCats.slice(0, 3))
+      setThriftCategories(thriftCats.slice(0, 3))
+      setAccessoriesCategories(accessoriesCats.slice(0, 3))
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load products from Supabase'
       // Error logging is kept for production debugging
@@ -159,67 +212,29 @@ export default function HomePage() {
             viewport={{ once: true, margin: '-100px' }}
             className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6"
           >
-            {/* Show only 3 category preview cards */}
-            <Link href="/best-seller?category=racing-jacket" className="block">
-              <motion.div
-                variants={sectionVariants}
-                className="bg-base rounded-lg overflow-hidden border border-gray-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-shadow duration-300 cursor-pointer"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                  <Image
-                    src="https://picsum.photos/id/1062/800/800"
-                    alt="Racing Jacket"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
+            {bestSellerCategories.length > 0 ? (
+              bestSellerCategories.map((category) => (
+                <CategoryCard
+                  key={category.id}
+                  category={category}
+                  href={`/best-seller?category=${category.slug}`}
+                  onImageChange={handleCategoryImageChange}
+                />
+              ))
+            ) : (
+              // Fallback to placeholder cards if no categories found
+              <>
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
                 </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="font-semibold text-gray-900 mb-2 text-lg">Racing Jacket</h3>
-                  <p className="text-sm text-gray-600 mb-4">Explore our collection</p>
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
                 </div>
-              </motion.div>
-            </Link>
-            <Link href="/best-seller?category=leather-jacket" className="block">
-              <motion.div
-                variants={sectionVariants}
-                className="bg-base rounded-lg overflow-hidden border border-gray-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-shadow duration-300 cursor-pointer"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                  <Image
-                    src="https://picsum.photos/id/237/800/800"
-                    alt="Leather Jacket"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
                 </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="font-semibold text-gray-900 mb-2 text-lg">Leather Jacket</h3>
-                  <p className="text-sm text-gray-600 mb-4">Explore our collection</p>
-                </div>
-              </motion.div>
-            </Link>
-            <Link href="/best-seller?category=bootcut-pant" className="block">
-              <motion.div
-                variants={sectionVariants}
-                className="bg-base rounded-lg overflow-hidden border border-gray-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-shadow duration-300 cursor-pointer"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                  <Image
-                    src="https://picsum.photos/id/366/800/800"
-                    alt="Bootcut Pant"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="font-semibold text-gray-900 mb-2 text-lg">Bootcut Pant</h3>
-                  <p className="text-sm text-gray-600 mb-4">Explore our collection</p>
-                </div>
-              </motion.div>
-            </Link>
+              </>
+            )}
           </motion.div>
         </section>
 
@@ -233,67 +248,28 @@ export default function HomePage() {
             viewport={{ once: true, margin: '-100px' }}
             className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6"
           >
-            {/* Show only 3 category preview cards */}
-            <Link href="/mens?category=jacket" className="block">
-              <motion.div
-                variants={sectionVariants}
-                className="bg-base rounded-lg overflow-hidden border border-gray-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-shadow duration-300 cursor-pointer"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                  <Image
-                    src="https://picsum.photos/id/1062/800/800"
-                    alt="Jacket"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
+            {mensCategories.length > 0 ? (
+              mensCategories.map((category) => (
+                <CategoryCard
+                  key={category.id}
+                  category={category}
+                  href={`/mens?category=${category.slug}`}
+                  onImageChange={handleCategoryImageChange}
+                />
+              ))
+            ) : (
+              <>
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
                 </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="font-semibold text-gray-900 mb-2 text-lg">Jacket</h3>
-                  <p className="text-sm text-gray-600 mb-4">Explore our collection</p>
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
                 </div>
-              </motion.div>
-            </Link>
-            <Link href="/mens?category=shirts" className="block">
-              <motion.div
-                variants={sectionVariants}
-                className="bg-base rounded-lg overflow-hidden border border-gray-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-shadow duration-300 cursor-pointer"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                  <Image
-                    src="https://picsum.photos/id/482/800/800"
-                    alt="Shirts"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
                 </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="font-semibold text-gray-900 mb-2 text-lg">Shirts</h3>
-                  <p className="text-sm text-gray-600 mb-4">Explore our collection</p>
-                </div>
-              </motion.div>
-            </Link>
-            <Link href="/mens?category=t-shirt" className="block">
-              <motion.div
-                variants={sectionVariants}
-                className="bg-base rounded-lg overflow-hidden border border-gray-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-shadow duration-300 cursor-pointer"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                  <Image
-                    src="https://picsum.photos/id/1005/800/800"
-                    alt="T Shirt"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="font-semibold text-gray-900 mb-2 text-lg">T Shirt</h3>
-                  <p className="text-sm text-gray-600 mb-4">Explore our collection</p>
-                </div>
-              </motion.div>
-            </Link>
+              </>
+            )}
           </motion.div>
         </section>
 
@@ -307,67 +283,28 @@ export default function HomePage() {
             viewport={{ once: true, margin: '-100px' }}
             className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6"
           >
-            {/* Show only 3 category preview cards */}
-            <Link href="/womens?category=shirts" className="block">
-              <motion.div
-                variants={sectionVariants}
-                className="bg-base rounded-lg overflow-hidden border border-gray-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-shadow duration-300 cursor-pointer"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                  <Image
-                    src="https://picsum.photos/id/1015/800/800"
-                    alt="Shirts"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
+            {womensCategories.length > 0 ? (
+              womensCategories.map((category) => (
+                <CategoryCard
+                  key={category.id}
+                  category={category}
+                  href={`/womens?category=${category.slug}`}
+                  onImageChange={handleCategoryImageChange}
+                />
+              ))
+            ) : (
+              <>
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
                 </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="font-semibold text-gray-900 mb-2 text-lg">Shirts</h3>
-                  <p className="text-sm text-gray-600 mb-4">Explore our collection</p>
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
                 </div>
-              </motion.div>
-            </Link>
-            <Link href="/womens?category=tops" className="block">
-              <motion.div
-                variants={sectionVariants}
-                className="bg-base rounded-lg overflow-hidden border border-gray-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-shadow duration-300 cursor-pointer"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                  <Image
-                    src="https://picsum.photos/id/1020/800/800"
-                    alt="Tops"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
                 </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="font-semibold text-gray-900 mb-2 text-lg">Tops</h3>
-                  <p className="text-sm text-gray-600 mb-4">Explore our collection</p>
-                </div>
-              </motion.div>
-            </Link>
-            <Link href="/womens?category=jeans" className="block">
-              <motion.div
-                variants={sectionVariants}
-                className="bg-base rounded-lg overflow-hidden border border-gray-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-shadow duration-300 cursor-pointer"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                  <Image
-                    src="https://picsum.photos/id/1023/800/800"
-                    alt="Jeans"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="font-semibold text-gray-900 mb-2 text-lg">Jeans</h3>
-                  <p className="text-sm text-gray-600 mb-4">Explore our collection</p>
-                </div>
-              </motion.div>
-            </Link>
+              </>
+            )}
           </motion.div>
         </section>
 
@@ -381,118 +318,64 @@ export default function HomePage() {
             viewport={{ once: true, margin: '-100px' }}
             className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6"
           >
-            {/* Show only 3 category preview cards */}
-            <Link href="/thrift?category=mens-jacket" className="block">
-              <motion.div
-                variants={sectionVariants}
-                className="bg-base rounded-lg overflow-hidden border border-gray-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-shadow duration-300 cursor-pointer"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                  <Image
-                    src="https://picsum.photos/id/1041/800/800"
-                    alt="Mens Jacket"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
+            {thriftCategories.length > 0 ? (
+              thriftCategories.map((category) => (
+                <CategoryCard
+                  key={category.id}
+                  category={category}
+                  href={`/thrift?category=${category.slug}`}
+                  onImageChange={handleCategoryImageChange}
+                />
+              ))
+            ) : (
+              <>
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
                 </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="font-semibold text-gray-900 mb-2 text-lg">Mens Jacket</h3>
-                  <p className="text-sm text-gray-600 mb-4">Explore our collection</p>
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
                 </div>
-              </motion.div>
-            </Link>
-            <Link href="/thrift?category=womens-jacket" className="block">
-              <motion.div
-                variants={sectionVariants}
-                className="bg-base rounded-lg overflow-hidden border border-gray-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-shadow duration-300 cursor-pointer"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                  <Image
-                    src="https://picsum.photos/id/1044/800/800"
-                    alt="Womens Jacket"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
                 </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="font-semibold text-gray-900 mb-2 text-lg">Womens Jacket</h3>
-                  <p className="text-sm text-gray-600 mb-4">Explore our collection</p>
-                </div>
-              </motion.div>
-            </Link>
-            <Link href="/thrift?category=womens-jeans" className="block">
-              <motion.div
-                variants={sectionVariants}
-                className="bg-white rounded-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow duration-300 cursor-pointer"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                  <Image
-                    src="https://picsum.photos/id/1047/800/800"
-                    alt="Womens Jeans"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="font-semibold text-gray-900 mb-2 text-lg">Womens Jeans</h3>
-                  <p className="text-sm text-gray-600 mb-4">Explore our collection</p>
-                </div>
-              </motion.div>
-            </Link>
+              </>
+            )}
           </motion.div>
         </section>
 
         {/* Accessories Section */}
         <section id="accessories" className="container mx-auto px-4 py-16 md:py-24">
-          <SectionHeader title="Accessories" href="#accessories" />
-          {isLoading ? (
-            <div className="text-center py-16">
-              <p className="text-gray-600">Loading products...</p>
-            </div>
-          ) : accessoriesProducts.length === 0 ? (
-            <div>
-              <div className="text-center py-16">
-                <p className="text-gray-600 text-lg mb-2">No products yet</p>
-                <p className="text-gray-500 text-sm">
-                  {!isAdminLoading && isAdmin
-                    ? 'Add your first product using the "Add Product" card below.'
-                    : 'Check back soon for new products!'}
-                </p>
-              </div>
-              {!isAdminLoading && isAdmin && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="max-w-md mx-auto"
-                >
-                  <AddProductCard category="accessories" />
-                </motion.div>
-              )}
-            </div>
-          ) : (
-            <motion.div
-              variants={sectionVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: '-50px' }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
-            >
-              {accessoriesProducts.map((product) => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product}
-                  onRemove={(productId) => {
-                    setAccessoriesProducts((prev) => prev.filter((p) => p.id !== productId))
-                  }}
+          <SectionHeader title="Accessories" href="#accessories" category="accessories" />
+          <motion.div
+            variants={sectionVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-100px' }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6"
+          >
+            {accessoriesCategories.length > 0 ? (
+              accessoriesCategories.map((category) => (
+                <CategoryCard
+                  key={category.id}
+                  category={category}
+                  href={`#accessories?category=${category.slug}`}
+                  onImageChange={handleCategoryImageChange}
                 />
-              ))}
-              {!isAdminLoading && isAdmin && <AddProductCard category="accessories" />}
-            </motion.div>
-          )}
+              ))
+            ) : (
+              <>
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
+                </div>
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
+                </div>
+                <div className="bg-base rounded-lg overflow-hidden border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500">No categories available</p>
+                </div>
+              </>
+            )}
+          </motion.div>
         </section>
 
         {/* About Section */}
