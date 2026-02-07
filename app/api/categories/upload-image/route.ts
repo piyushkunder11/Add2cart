@@ -100,8 +100,9 @@ export async function POST(request: NextRequest) {
       .single()
 
     // Delete old image if it exists and is in our storage
-    if (categoryData?.image_url) {
-      const oldUrl = categoryData.image_url
+    const typedCategoryData = categoryData as { image_url: string | null } | null
+    if (typedCategoryData?.image_url) {
+      const oldUrl = typedCategoryData.image_url
       if (oldUrl.includes('/product-images/categories/')) {
         try {
           const urlParts = oldUrl.split('/product-images/')
