@@ -120,12 +120,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Update category with new image URL
-    const { error: updateError } = await supabaseServer
-      .from('categories')
+    const updateQuery = supabaseServer.from('categories') as any
+    const { error: updateError } = await updateQuery
       .update({
         image_url: urlData.publicUrl,
         updated_at: new Date().toISOString(),
-      } as any)
+      })
       .eq('id', categoryId)
 
     if (updateError) {
