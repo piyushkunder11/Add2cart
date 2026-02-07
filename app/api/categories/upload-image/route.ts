@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
       .update({
         image_url: urlData.publicUrl,
         updated_at: new Date().toISOString(),
-      })
+      } as any)
       .eq('id', categoryId)
 
     if (updateError) {
