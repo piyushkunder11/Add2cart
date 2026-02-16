@@ -4,12 +4,15 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '@/lib/store/auth'
 import { useCartStore } from '@/lib/store/cart'
 import { useIsAdmin } from '@/lib/auth/useIsAdmin'
 import { smoothScrollTo } from '@/lib/scroll'
 
 export default function Navbar() {
+  const router = useRouter()
+  const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
   const [activeSection, setActiveSection] = useState<string>('home')
@@ -22,14 +25,14 @@ export default function Navbar() {
   const { isAdmin, isLoading: isAdminLoading } = useIsAdmin()
 
   const navLinks = [
-    { href: '#home', label: 'Home', id: 'home' },
-    { href: '#best-seller', label: 'Best Seller', id: 'best-seller' },
-    { href: '#mens', label: 'Mens', id: 'mens' },
-    { href: '#womens', label: 'Womens', id: 'womens' },
-    { href: '#thrift', label: 'Thrift', id: 'thrift' },
-    { href: '#accessories', label: 'Accessories', id: 'accessories' },
-    { href: '#about', label: 'About', id: 'about' },
-    { href: '#contact', label: 'Contact', id: 'contact' },
+    { href: '#home', label: 'Home', id: 'home', route: '/' },
+    { href: '#best-seller', label: 'Best Seller', id: 'best-seller', route: '/best-seller' },
+    { href: '#mens', label: 'Mens', id: 'mens', route: '/mens' },
+    { href: '#womens', label: 'Womens', id: 'womens', route: '/womens' },
+    { href: '#thrift', label: 'Thrift', id: 'thrift', route: '/thrift' },
+    { href: '#accessories', label: 'Accessories', id: 'accessories', route: '/#accessories' },
+    { href: '#about', label: 'About', id: 'about', route: '/#about' },
+    { href: '#contact', label: 'Contact', id: 'contact', route: '/#contact' },
   ]
 
   // Scrollspy with IntersectionObserver
@@ -86,11 +89,78 @@ export default function Navbar() {
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, id: string) => {
     e.preventDefault()
-    smoothScrollTo(id, 80)
     setIsMobileMenuOpen(false)
-    // Update URL hash without scrolling
-    window.history.pushState(null, '', href)
-    setActiveSection(id)
+    
+    // Find the link to get the route
+    const link = navLinks.find(l => l.id === id)
+    const isOnHomePage = pathname === '/' || pathname === ''
+    
+    // Helper function to scroll to section
+    const scrollToSection = (retryCount = 0) => {
+      const element = document.getElementById(id)
+      if (element) {
+        // Use scrollIntoView with smooth behavior
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        // Update URL without triggering navigation
+        window.history.pushState(null, '', href)
+        setActiveSection(id)
+      } else if (retryCount < 3) {
+        // Retry if element not found (might still be loading)
+        setTimeout(() => scrollToSection(retryCount + 1), 100)
+      } else {
+        // Final fallback: use smoothScrollTo helper
+        smoothScrollTo(id, 80)
+        window.history.pushState(null, '', href)
+        setActiveSection(id)
+      }
+    }
+    
+    if (link && link.route) {
+      // Category pages: always navigate to the page (mens, womens, thrift, best-seller)
+      const categoryPages = ['/mens', '/womens', '/thrift', '/best-seller']
+      if (categoryPages.includes(link.route)) {
+        router.push(link.route)
+        return
+      }
+      
+      // If route contains hash (accessories, about, contact), handle navigation and scrolling
+      if (link.route.includes('#')) {
+        if (!isOnHomePage) {
+          // Navigate to home page with hash
+          router.push(link.route)
+          // Wait for navigation to complete, then scroll
+          // Use requestAnimationFrame to ensure DOM is ready
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              scrollToSection()
+            }, 100)
+          })
+        } else {
+          // Already on home page, use requestAnimationFrame to ensure DOM is ready
+          requestAnimationFrame(() => {
+            scrollToSection()
+          })
+        }
+        return
+      }
+      
+      // Home page: scroll to section if on home, otherwise navigate
+      if (link.route === '/') {
+        if (isOnHomePage && href.startsWith('#')) {
+          requestAnimationFrame(() => {
+            scrollToSection()
+          })
+        } else {
+          router.push(href)
+        }
+        return
+      }
+    }
+    
+    // Fallback: try to scroll to section
+    requestAnimationFrame(() => {
+      scrollToSection()
+    })
   }
 
   useEffect(() => {

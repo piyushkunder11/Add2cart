@@ -33,7 +33,27 @@ function BestSellerContent() {
   useEffect(() => {
     let cancelled = false
     fetchSubcategoriesByParentSlug('best-seller').then((data) => {
-      if (!cancelled) setCategories(data)
+      if (!cancelled) {
+        // Remove duplicates by multiple criteria to ensure no repeats
+        // First deduplicate by ID (most unique)
+        const byId = Array.from(
+          new Map(data.map(cat => [cat.id, cat])).values()
+        )
+        // Then deduplicate by slug
+        const bySlug = Array.from(
+          new Map(byId.map(cat => [cat.slug, cat])).values()
+        )
+        // Finally deduplicate by normalized name (after removing prefix)
+        const uniqueCategories = Array.from(
+          new Map(
+            bySlug.map(cat => {
+              const normalizedName = cat.name.replace(/^best\s+seller\s+/i, '').trim().toLowerCase()
+              return [normalizedName, cat]
+            })
+          ).values()
+        )
+        setCategories(uniqueCategories)
+      }
     })
     return () => { cancelled = true }
   }, [])
@@ -131,19 +151,23 @@ function BestSellerContent() {
             >
               All
             </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.slug}
-                onClick={() => setCategoryInUrl(cat.slug)}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-                  selectedCategory === cat.slug
-                    ? 'bg-primary text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                } focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2`}
-              >
-                {cat.name.toUpperCase()}
-              </button>
-            ))}
+            {categories.map((cat) => {
+              // Remove "BEST SELLER" prefix from category name
+              const displayName = cat.name.replace(/^best\s+seller\s+/i, '').trim()
+              return (
+                <button
+                  key={cat.slug}
+                  onClick={() => setCategoryInUrl(cat.slug)}
+                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                    selectedCategory === cat.slug
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  } focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2`}
+                >
+                  {displayName.toUpperCase()}
+                </button>
+              )
+            })}
           </div>
         </div>
       </div>

@@ -539,7 +539,7 @@ export default function CheckoutPage() {
               <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">Review & Pay</h1>
             </div>
             <p className="text-gray-600 text-sm md:text-base">
-              Need help? <span className="text-gray-900 font-semibold">support@store.com</span>
+              Need help? <span className="text-gray-900 font-semibold">add2cart.ind@gmail.com</span>
             </p>
           </div>
 

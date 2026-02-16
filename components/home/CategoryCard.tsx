@@ -66,7 +66,9 @@ export default function CategoryCard({ category, href, onImageChange }: Category
             )}
           </div>
           <div className="p-4 md:p-6">
-            <h3 className="font-semibold text-gray-900 mb-2 text-lg">{category.name}</h3>
+            <h3 className="font-semibold text-gray-900 mb-2 text-lg">
+              {category.name.replace(/^best\s+seller\s+/i, '').trim()}
+            </h3>
             <p className="text-sm text-gray-600 mb-4">Explore our collection</p>
           </div>
         </motion.div>
@@ -113,7 +115,9 @@ export default function CategoryCard({ category, href, onImageChange }: Category
               )}
             </div>
             <div className="p-4 md:p-6">
-              <h3 className="font-semibold text-gray-900 mb-2 text-lg">{category.name}</h3>
+              <h3 className="font-semibold text-gray-900 mb-2 text-lg">
+                {category.name.replace(/^best\s+seller\s+/i, '').trim()}
+              </h3>
               <p className="text-sm text-gray-600 mb-4">Explore our collection</p>
             </div>
           </motion.div>

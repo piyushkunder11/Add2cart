@@ -42,6 +42,28 @@ export default function HomePage() {
   const [thriftCategories, setThriftCategories] = useState<Category[]>([])
   const [accessoriesCategories, setAccessoriesCategories] = useState<Category[]>([])
 
+  // Helper function to deduplicate categories
+  const deduplicateCategories = useCallback((categories: Category[]) => {
+    // First deduplicate by ID (most unique)
+    const byId = Array.from(
+      new Map(categories.map(cat => [cat.id, cat])).values()
+    )
+    // Then deduplicate by slug
+    const bySlug = Array.from(
+      new Map(byId.map(cat => [cat.slug, cat])).values()
+    )
+    // Finally deduplicate by normalized name (after removing prefix)
+    const unique = Array.from(
+      new Map(
+        bySlug.map(cat => {
+          const normalizedName = cat.name.replace(/^best\s+seller\s+/i, '').trim().toLowerCase()
+          return [normalizedName, cat]
+        })
+      ).values()
+    )
+    return unique
+  }, [])
+
   const loadCategories = useCallback(async () => {
     try {
       // Fetch all categories in parallel
@@ -53,16 +75,16 @@ export default function HomePage() {
         fetchSubcategoriesByParentSlug('accessories'),
       ])
       
-      // Set categories (limit to 3 for display)
-      setBestSellerCategories(bestSellerCats.slice(0, 3))
-      setMensCategories(mensCats.slice(0, 3))
-      setWomensCategories(womensCats.slice(0, 3))
-      setThriftCategories(thriftCats.slice(0, 3))
-      setAccessoriesCategories(accessoriesCats.slice(0, 3))
+      // Deduplicate and set categories (limit to 3 for display)
+      setBestSellerCategories(deduplicateCategories(bestSellerCats).slice(0, 3))
+      setMensCategories(deduplicateCategories(mensCats).slice(0, 3))
+      setWomensCategories(deduplicateCategories(womensCats).slice(0, 3))
+      setThriftCategories(deduplicateCategories(thriftCats).slice(0, 3))
+      setAccessoriesCategories(deduplicateCategories(accessoriesCats).slice(0, 3))
     } catch (error) {
       console.error('[HomePage] Error loading categories:', error)
     }
-  }, [])
+  }, [deduplicateCategories])
 
   // Update category image in state immediately after upload so the card shows the new image
   const handleCategoryImageChange = useCallback((categoryId: string, newImageUrl: string) => {
@@ -99,12 +121,12 @@ export default function HomePage() {
       setThriftProducts(thrift)
       setAccessoriesProducts(accessories)
       
-      // Set categories (limit to 3 for display)
-      setBestSellerCategories(bestSellerCats.slice(0, 3))
-      setMensCategories(mensCats.slice(0, 3))
-      setWomensCategories(womensCats.slice(0, 3))
-      setThriftCategories(thriftCats.slice(0, 3))
-      setAccessoriesCategories(accessoriesCats.slice(0, 3))
+      // Deduplicate and set categories (limit to 3 for display)
+      setBestSellerCategories(deduplicateCategories(bestSellerCats).slice(0, 3))
+      setMensCategories(deduplicateCategories(mensCats).slice(0, 3))
+      setWomensCategories(deduplicateCategories(womensCats).slice(0, 3))
+      setThriftCategories(deduplicateCategories(thriftCats).slice(0, 3))
+      setAccessoriesCategories(deduplicateCategories(accessoriesCats).slice(0, 3))
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load products from Supabase'
       // Error logging is kept for production debugging
@@ -113,7 +135,7 @@ export default function HomePage() {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [deduplicateCategories])
 
   // Fetch products from Supabase on mount
   useEffect(() => {
