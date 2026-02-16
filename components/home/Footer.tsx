@@ -17,22 +17,22 @@ export default function Footer() {
             <h4 className="font-semibold text-gray-900 mb-4">Shop</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="#best-seller" className="text-gray-900 hover:text-neutral-700 transition-colors">
+                <Link href="/best-seller" className="text-gray-900 hover:text-neutral-700 transition-colors">
                   Best Seller
                 </Link>
               </li>
               <li>
-                <Link href="#mens" className="text-gray-900 hover:text-neutral-700 transition-colors">
+                <Link href="/mens" className="text-gray-900 hover:text-neutral-700 transition-colors">
                   Mens
                 </Link>
               </li>
               <li>
-                <Link href="#womens" className="text-gray-900 hover:text-neutral-700 transition-colors">
+                <Link href="/womens" className="text-gray-900 hover:text-neutral-700 transition-colors">
                   Womens
                 </Link>
               </li>
               <li>
-                <Link href="#thrift" className="text-gray-900 hover:text-neutral-700 transition-colors">
+                <Link href="/thrift" className="text-gray-900 hover:text-neutral-700 transition-colors">
                   Thrift
                 </Link>
               </li>
@@ -42,12 +42,12 @@ export default function Footer() {
             <h4 className="font-semibold text-gray-900 mb-4">Company</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="#about" className="text-gray-900 hover:text-neutral-700 transition-colors">
+                <Link href="/#about" className="text-gray-900 hover:text-neutral-700 transition-colors">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link href="#contact" className="text-gray-900 hover:text-neutral-700 transition-colors">
+                <Link href="/#contact" className="text-gray-900 hover:text-neutral-700 transition-colors">
                   Contact
                 </Link>
               </li>
