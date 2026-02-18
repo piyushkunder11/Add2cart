@@ -10,6 +10,14 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Add2Cart - Login & Signup',
   description: 'Login or create an account to continue shopping',
+  icons: {
+    icon: [
+      { url: '/add2cart.png', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/add2cart.png', type: 'image/png' },
+    ],
+  },
 }
 
 export default function RootLayout({
